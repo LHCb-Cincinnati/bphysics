@@ -1,0 +1,10 @@
+**/*.pdf
+Archive
+**/*plots
+data
+Mohamed
+
+# Ignore everything produced by python and jupyter
+**/*.pyc
+**/*.ipynb_checkpoints
+__pycache__
