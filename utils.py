@@ -37,3 +37,25 @@ def print_keys(keys):
     for i in range(0, len(keys), 5):
         print(', '.join(keys[i:i+5]))
         
+
+
+def load_mc_data(mc_base_path, mc_types, decay_tree):
+    # Usage: if you want to load more MC data, call load_mc_data function with appropriate parameters.
+    # mc_data += load_mc_data(mc_base_path, mc_types, decay_tree)
+
+    # Get user input for which MC type to load
+    mc_idx_list = list(map(int, input("Please enter the numbers of your desired MC types (comma separated): ").split(',')))
+    selected_mc_types = [mc_types[idx-1] for idx in mc_idx_list]
+
+    # Create a list of selected MC files for each selected MC type
+    mc_data = []
+    for selected_mc_type in selected_mc_types:
+        selected_mc_files = [f'{selected_mc_type}_{year}.root' for year in ['15MU', '16MU', '17MU', '18MU', '15MD', '16MD', '17MD', '18MD']]
+        mc_data += [f'{mc_base_path}{file}:{decay_tree}/DecayTree' for file in selected_mc_files]
+    
+    # Print selected decay tree and MC type
+    print(f"Selected decay tree: {decay_tree}")
+    for mc_type in selected_mc_types:
+        print(f"Selected MC type: {mc_type}")
+        
+    return mc_data
