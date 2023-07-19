@@ -59,3 +59,26 @@ def load_mc_data(mc_base_path, mc_types, decay_tree):
         print(f"Selected MC type: {mc_type}")
         
     return mc_data
+
+
+
+def calculate_signal_efficiency_and_background_rejection(cut, signal_region, left_sideband_region, right_sideband_region):
+
+    # Apply the cut and calculate the number of signal and background events passing the cut in the signal and sideband regions
+    cut_array = eval(cut)
+    signal_passing_cut_signal = np.sum(signal_weights[(B_mass > signal_region[0]) & (B_mass < signal_region[1]) & cut_array])
+    background_passing_cut_signal = np.sum(signal_weights[(B_mass > signal_region[0]) & (B_mass < signal_region[1]) & ~cut_array])
+    signal_passing_cut_left_sideband = np.sum(signal_weights[(B_mass > left_sideband_region[0]) & (B_mass < left_sideband_region[1]) & cut_array])
+    background_passing_cut_left_sideband = np.sum(signal_weights[(B_mass > left_sideband_region[0]) & (B_mass < left_sideband_region[1]) & ~cut_array])
+    signal_passing_cut_right_sideband = np.sum(signal_weights[(B_mass > right_sideband_region[0]) & (B_mass < right_sideband_region[1]) & cut_array])
+    background_passing_cut_right_sideband = np.sum(signal_weights[(B_mass > right_sideband_region[0]) & (B_mass < right_sideband_region[1]) & ~cut_array])
+
+    # Calculate the signal efficiency and background rejection
+    total_signal_events = np.sum(signal_weights[(B_mass > signal_region[0]) & (B_mass < signal_region[1])])
+    total_background_events = (np.sum(signal_weights[(B_mass > left_sideband_region[0]) & (B_mass < left_sideband_region[1])]) +
+                               np.sum(signal_weights[(B_mass > right_sideband_region[0]) & (B_mass < right_sideband_region[1])]))
+    signal_efficiency = signal_passing_cut_signal / total_signal_events
+    background_rejection = (background_passing_cut_left_sideband + background_passing_cut_right_sideband) / total_background_events
+
+    return signal_efficiency, background_rejection
+
