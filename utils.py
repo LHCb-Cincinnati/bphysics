@@ -60,10 +60,7 @@ def load_mc_data(mc_base_path, mc_types, decay_tree):
         
     return mc_data
 
-
-
-def calculate_signal_efficiency_and_background_rejection(cut, signal_region, left_sideband_region, right_sideband_region):
-
+def calculate_efficiency_rejection(cut, signal_region, left_sideband_region, right_sideband_region):
     # Apply the cut and calculate the number of signal and background events passing the cut in the signal and sideband regions
     cut_array = eval(cut)
     signal_passing_cut_signal = np.sum(signal_weights[(B_mass > signal_region[0]) & (B_mass < signal_region[1]) & cut_array])
@@ -80,5 +77,4 @@ def calculate_signal_efficiency_and_background_rejection(cut, signal_region, lef
     signal_efficiency = signal_passing_cut_signal / total_signal_events
     background_rejection = (background_passing_cut_left_sideband + background_passing_cut_right_sideband) / total_background_events
 
-    return signal_efficiency, background_rejection
-
+    return cut, signal_efficiency, background_rejection
