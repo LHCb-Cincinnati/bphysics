@@ -446,7 +446,140 @@ class BreitWigner_plus_Exp:
             plt.show()
         return fig, ax
 
+class BreitWigner_plus_Linear:
+    def __init__(self, bins, nC, minuit_limits=None):
+        self.xMin, self.xMax, self.bin_width, self.x_vals, self.y_vals, self.y_errs = self.Fit_Setup(nC, bins)
+        self.minuit_limits = minuit_limits or {}
 
+    def Fit_Setup(self, nC, bins):
+        xMin = bins[0]
+        xMax = bins[-1]
+        bin_width = bins[1]-bins[0]
+        x_vals = 0.5 * (bins[:-1] + bins[1:])
+        y_vals = nC
+        y_errs = np.sqrt(nC)
+        return xMin, xMax, bin_width, x_vals, y_vals, y_errs
+
+    def breit_wigner(self, x, M, Gamma):
+        return (1 / np.pi) * (0.5 * Gamma) / ((x - M)**2 + (0.5 * Gamma)**2)
+
+    def linear(self, x, m, b):
+        integral = m * (self.xMax - self.xMin) + 0.5 * b * (self.xMax**2 - self.xMin**2)
+        norm = 1. / integral
+        return self.bin_width * norm * (m * x + b)
+
+    def BreitWigner_plus_Linear(self, x_vals, n_s, n_b, M, Gamma, m, b):
+        return n_s * self.breit_wigner(x_vals, M, Gamma) + n_b * self.linear(x_vals, m, b)
+
+    def chi_squared(self, n_s, n_b, M, Gamma, m, b):
+        mask = (0 != self.y_errs)
+        prediction = self.BreitWigner_plus_Linear(self.x_vals[mask], n_s, n_b, M, Gamma, m, b)
+        ressq = (self.y_vals[mask] - prediction)**2 / np.square(self.y_errs[mask])
+        return ressq.sum()
+
+    def fit(self, init_pars):
+        m = Minuit(self.chi_squared, n_s=init_pars[0], n_b=init_pars[1], M=init_pars[2], Gamma=init_pars[3], m=init_pars[4], b=init_pars[5])
+
+        m.limits["n_s"] = self.minuit_limits.get("n_s", None)
+        m.limits["n_b"] = self.minuit_limits.get("n_b", None)
+        m.limits["M"] = self.minuit_limits.get("M", None)
+        m.limits["Gamma"] = self.minuit_limits.get("Gamma", None)
+        m.limits["m"] = self.minuit_limits.get("m", None)
+        m.limits["b"] = self.minuit_limits.get("b", None)
+
+        m.migrad()
+        return m
+
+    def plot(self, m, bins, nC, title='Plot', xlabel='X', ylabel='Y', vlines=None, show_plot=True):
+        fig, ax = plt.subplots()
+        ax.set_title(title)
+        ax.hist(bins[:-1], bins=bins, weights=nC, label='Data')
+        mask = (0 != self.y_errs)
+        predictions = self.BreitWigner_plus_Linear(self.x_vals[mask], *m.values)
+        ax.plot(self.x_vals[mask], predictions, 'r-', label='Fit')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.axis([self.xMin, self.xMax, 0, 1.15*max(nC)])
+        ax.grid(True)
+        if vlines:
+            for vl in vlines:
+                ax.vlines(vl, 0., 0.6*max(nC), colors='yellow')
+        ax.legend()
+
+        if show_plot:
+            plt.show()
+        return fig, ax
+
+
+
+
+class CrystalBall_plus_Exp:
+    def __init__(self, bins, nC, minuit_limits=None):
+        self.xMin, self.xMax, self.bin_width, self.x_vals, self.y_vals, self.y_errs = self.Fit_Setup(nC, bins)
+        self.minuit_limits = minuit_limits or {}
+
+    def Fit_Setup(self, nC, bins):
+        xMin = bins[0]
+        xMax = bins[-1]
+        bin_width = bins[1]-bins[0]
+        x_vals = 0.5 * (bins[:-1] + bins[1:])
+        y_vals = nC
+        y_errs = np.sqrt(nC)
+        return xMin, xMax, bin_width, x_vals, y_vals, y_errs        
+
+    def expA(self, x, A, b):
+        integral = (A/b) * (1.0 - np.exp(-b*(self.xMax - self.xMin)))
+        norm = 1./integral
+        return self.bin_width * norm * A * np.exp(-b * (x - self.xMin))
+
+    def crystal_ball(self, x, alpha, n, mu, sigma):
+        A = (n/np.abs(alpha))**n * np.exp(-alpha**2 / 2)
+        B = n/np.abs(alpha) - np.abs(alpha)
+        return np.where((x - mu)/sigma > -alpha, np.exp(-(x - mu)**2 / (2 * sigma**2)), A * (B - (x - mu)/sigma)**(-n))
+
+    def CrystalBall_plus_ExpA(self, x_vals, n_s, n_b, alpha, n, mu, sigma, A, b):
+        return n_s * self.crystal_ball(x_vals, alpha, n, mu, sigma) + n_b * self.expA(x_vals, A, b)
+
+    def chi_squared(self, n_s, n_b, alpha, n, mu, sigma, A, b):
+        mask = (0 != self.y_errs)
+        prediction = self.CrystalBall_plus_ExpA(self.x_vals[mask], n_s, n_b, alpha, n, mu, sigma, A, b)
+        ressq = (self.y_vals[mask] - prediction)**2 / np.square(self.y_errs[mask])
+        return ressq.sum()
+
+    def fit(self, init_pars):
+        m = Minuit(self.chi_squared, n_s=init_pars[0], n_b=init_pars[1], alpha=init_pars[2], n=init_pars[3], mu=init_pars[4], sigma=init_pars[5], A=init_pars[6], b=init_pars[7])
+        
+        m.limits["n_s"] = self.minuit_limits.get("n_s", None)
+        m.limits["n_b"] = self.minuit_limits.get("n_b", None)
+        m.limits["alpha"] = self.minuit_limits.get("alpha", None)
+        m.limits["n"] = self.minuit_limits.get("n", None)
+        m.limits["mu"] = self.minuit_limits.get("mu", None)
+        m.limits["sigma"] = self.minuit_limits.get("sigma", None)
+        m.limits["A"] = self.minuit_limits.get("A", None)
+        m.limits["b"] = self.minuit_limits.get("b", None)
+        
+        m.migrad()
+        return m
+
+    def plot(self, m, bins, nC, title='Plot', xlabel='X', ylabel='Y', vlines=None, show_plot=True):
+        fig, ax = plt.subplots()
+        ax.set_title(title)
+        ax.hist(bins[:-1], bins=bins, weights=nC, label='Data')
+        mask = (0 != self.y_errs)
+        predictions = self.CrystalBall_plus_ExpA(self.x_vals[mask], *m.values)
+        ax.plot(self.x_vals[mask], predictions, 'r-', label='Fit')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.axis([self.xMin, self.xMax, 0, 1.15*max(nC)])
+        ax.grid(True)
+        if vlines:
+            for vl in vlines:
+                ax.vlines(vl, 0., 0.6*max(nC), colors='yellow')
+        ax.legend()
+        
+        if show_plot:
+            plt.show()
+        return fig, ax
 
          
 ### ------------------------------- Helper Class ----------------------------- ##        
