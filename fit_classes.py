@@ -260,11 +260,13 @@ class DoubleGaussian_plus_Linear:
         integral = m * (self.xMax - self.xMin) + 0.5 * b * (self.xMax**2 - self.xMin**2)
         norm = 1. / integral
         return self.bin_width * norm * (m + b * (x - self.xMin))
+    
     def DoubleGaussian_plus_Linear(self, x_vals, n_s, f, n_b, mu1, mu2, sigma1, sigma2, m, b):
         n_s1 = n_s*f
         n_s2 = n_s*(1-f)
         return n_s1 * self.gaussian(x_vals, mu1, sigma1) + n_s2 * self.gaussian(x_vals, mu2, sigma2) + n_b * self.linear(x_vals, m, b)
-
+            
+     
     def chi_squared(self, n_s, f, n_b, mu1, mu2, sigma1, sigma2, m, b):
         mask = (0 != self.y_errs)
         prediction = self.DoubleGaussian_plus_Linear(self.x_vals[mask],n_s, f, n_b, mu1, mu2, sigma1, sigma2, m, b)

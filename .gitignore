@@ -9,3 +9,12 @@ Mohamed
 **/*.ipynb_checkpoints
 __pycache__
 .vscode/settings.json
+
+
+# Ignore data and log files
+**/*.root
+**/*.csv
+**/*.txt
+
+# Ignore Notebook copies
+**/*_copy*.ipynb
