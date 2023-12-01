@@ -48,10 +48,6 @@ def print_keys(keys):
 #--------------------------------------------------------------------------------------------------------------#
 
 
-
-import os
-import uproot
-
 def load_mc_data(base_path, selected_mc_types=None, decay_tree=None, list_decay_types=False):
     all_files = [os.path.join(base_path, file) for file in os.listdir(base_path) if file.endswith(".root")]
 
@@ -91,12 +87,11 @@ def load_mc_data(base_path, selected_mc_types=None, decay_tree=None, list_decay_
         return
 
     if selected_mc_types is not None:
-        all_files = [os.path.join(base_path, selected_mc_type, f"{selected_mc_type}_{year}.root") for selected_mc_type in selected_mc_types for year in ['15MU', '16MU', '17MU', '18MU', '15MD', '16MD', '17MD', '18MD']]
+        all_files = [os.path.join(base_path, f"{selected_mc_type}_{year}.root") for selected_mc_type in selected_mc_types for year in ['15MU', '16MU', '17MU', '18MU', '15MD', '16MD', '17MD', '18MD']]
 
     data = []
     for file_path in all_files:
         with uproot.open(file_path) as root_file:
-            print(f"Keys in {file_path}: {root_file.keys()}")  # Add this line
             for key in root_file.keys():
                 tree_name = key.split(';')[0]
                 if decay_tree is None or decay_tree in tree_name:
@@ -105,7 +100,6 @@ def load_mc_data(base_path, selected_mc_types=None, decay_tree=None, list_decay_
                     data.append(f"{file_path}:{tree_name}{suffix}")
                     break  # Break the loop as soon as a match is found
     return data
-
 
 
 #--------------------------------------------------------------------------------------------------------------#

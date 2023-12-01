@@ -1,4 +1,8 @@
+
+## Ignore plots and other stuff
 **/*.pdf
+**/*.png
+**/*.jpg
 Archive
 **/*plots
 data
@@ -18,3 +22,4 @@ __pycache__
 
 # Ignore Notebook copies
 **/*_copy*.ipynb
+
