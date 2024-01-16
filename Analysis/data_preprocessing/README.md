@@ -22,6 +22,15 @@ To use this notebook, specify the year, magnet polarity, decay tree, particle ty
 ```python
 main(year, magnet, decay_tree, ll_or_dd)  # Process all files
 ```
+
+- **Process multiple configurations in a loop**:
+```python
+configurations = [("2017", "MagDown", "LL"), ("2018", "MagUp", "DD")]
+for year, magnet, ll_or_dd in configurations:
+    decay_tree = f"B2L0barPKpKm_{ll_or_dd}/DecayTree"
+    main(year, magnet, decay_tree, ll_or_dd)
+```
+  
 ## 2. Check_Files.ipynb
 ### Purpose:
 `Check_Files.ipynb` checks the integrity of the reduced `.root` files. It ensures that the required decay trees are present and that there are no errors or missing data within the files.
@@ -35,12 +44,59 @@ data_folder_path = "/eos/lhcb/user/m/melashri/data/red_RD"
 decay_trees = ['B2L0barPKpKm']
 check_files(data_folder_path, decay_trees)
 ```
+
+- **Check files for a single decay tree**:
+```python
+check_files("/eos/lhcb/user/m/melashri/data/red_RD", ["B2L0barPKpKm"])
+```
+
+- **Check files for multiple decay trees:**:
+```python
+decay_trees = ["B2L0barPKpKm", "B2L0barPPK"]
+check_files("/eos/lhcb/user/m/melashri/data/red_RD", decay_trees)
+```
+- **Check files for different years and configurations:**:
+```python
+for year in ["2017", "2018"]:
+    for decay_tree in ["B2L0barPKpKm", "B2L0barPPK"]:
+        check_files("/eos/lhcb/user/m/melashri/data/red_RD", [decay_tree], year=year)
+```
+
+  
 ## 3. Merge_Files.ipynb
 ### Purpose:
 `Merge_Files.ipynb` is used to merge the individual `.root` files into a single file for each specific configuration or for defined configurations.
 
 ### Usage:
 Define the base directory, decay trees, years, magnet polarities, and particle types (`LL` or `DD`). The script will concatenate the files for each specified configuration.
+
+
+- **Merge files for a single configuration**:
+```python
+main("/eos/lhcb/user/m/melashri/data/red_RD", ["B2L0barPKpKm"], ["2017"], ["MagDown"], ["LL"], True)
+
+```
+
+- **Merge files for multiple configurations**:
+```python
+decay_trees = ["B2L0barPKpKm", "B2L0barPPK"]
+years = ["2016", "2017"]
+magnets = ["MagDown", "MagUp"]
+ll_or_dds = ["DD", "LL"]
+
+for decay_tree in decay_trees:
+    for year in years:
+        for magnet in magnets:
+            for ll_dd in ll_or_dds:
+                main("/eos/lhcb/user/m/melashri/data/red_RD", [decay_tree], [year], [magnet], [ll_dd], True)
+```
+
+- **Sequential processing for limited resources:**:
+```python
+# Set use_parallel to False for systems with limited computational resources
+main("/eos/lhcb/user/m/melashri/data/red_RD", ["B2L0barPKpKm"], ["2017"], ["MagDown"], ["LL"], False)
+```
+
 
 #### Example usage:
 ```python
