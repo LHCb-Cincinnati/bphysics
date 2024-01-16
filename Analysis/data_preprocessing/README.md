@@ -1,4 +1,4 @@
-# # LHCb B2L0hhh Data Preprocessing Pipeline
+# LHCb B2L0hhh Data Preprocessing Pipeline
 
 This pipeline is designed to preprocess `.root` files from the LHCb B2L0hhh data. It consists of three main Jupyter notebooks, each fulfilling a specific role in the data preparation process.
 
